@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Smart AI Notes - Syllabus Viewer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6fb;
+      padding: 20px;
+      margin: 0;
+    }
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,.15);
+      max-width: 900px;
+      margin: 20px auto;
+    }
+    .viewer {
+      margin-top: 20px;
+      border: 1px solid #ddd;
+      padding: 10px;
+      border-radius: 8px;
+      min-height: 200px;
+      background: #fafafa;
+      overflow-y: auto;
+      max-height: 600px;
+    }
+    pre {
+      white-space: pre-wrap;
+      background: #eef;
+      padding: 15px;
+      border-radius: 8px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    canvas {
+      width: 100%;
+      border-radius: 4px;
+    }
+    img {
+      max-width: 100%;
+      border-radius: 4px;
+    }
+    .box {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: 0.2s;
+      border: 1px solid #e0e0e0;
+    }
+    .box:hover {
+      background: #e8f4fd;
+      border-color: #007bff;
+    }
+    .unit-name {
+      color: #007bff;
+      text-decoration: underline;
+      font-weight: bold;
+    }
+    h2 {
+      color: #333;
+      margin-top: 0;
+    }
+    .status {
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+    .success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    /* Chat Modal Styles */
+    .chat-modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+    }
+
+    .chat-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      width: 90%;
+      max-width: 600px;
+      max-height: 80%;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-header {
+      background: #667eea;
+      color: white;
+      padding: 10px 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .chat-messages {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      max-height: 300px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .message {
+      margin-bottom: 10px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      max-width: 80%;
+    }
+
+    .ai-msg {
+      background: #f0f0f0;
+      align-self: flex-start;
+    }
+
+    .user-msg {
+      background: #667eea;
+      color: white;
+      align-self: flex-end;
+      margin-left: auto;
+    }
+
+    .chat-input {
+      border-top: 1px solid #ddd;
+      padding: 10px;
+    }
+
+    .chat-buttons {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 10px;
+    }
+
+    .chat-buttons button {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      background: #f0f0f0;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .chat-buttons button:hover {
+      background: #e0e0e0;
+    }
+
+    /* Unit Selection Styles */
+    .unit-checkbox {
+      margin-bottom: 5px;
+    }
+
+    .unit-selector-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    /* Navigation Bar */
+    .nav-bar {
+      background: #667eea;
+      color: white;
+      padding: 10px 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .nav-content {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-title {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .nav-button {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .nav-button:hover {
+      background: rgba(255,255,255,0.3);
+    }
+
+    /* Unit List Modal */
+    .unit-modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+    }
+
+    .unit-modal-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      width: 90%;
+      max-width: 600px;
+      max-height: 80%;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .unit-modal-header {
+      background: #667eea;
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .unit-modal-close {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    .unit-list {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      max-height: 400px;
+    }
+
+    .unit-item {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: 0.2s;
+      border: 1px solid #e0e0e0;
+    }
+
+    .unit-item:hover {
+      background: #e8f4fd;
+      border-color: #007bff;
+    }
+
+    .unit-name-modal {
+      color: #007bff;
+      text-decoration: underline;
+      font-weight: bold;
+    }
+
+    /* Adjust body padding for fixed nav */
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6fb;
+      padding: 80px 20px 20px 20px;
+      margin: 0;
+    }
+
+    /* Blinking Chatbot Icon */
+    .chatbot-icon {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      background: #667eea;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      animation: blink 2s infinite;
+      z-index: 999;
+      font-size: 24px;
+    }
+
+    .chatbot-icon:hover {
+      background: #5a67d8;
+    }
+
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0.5; }
+    }
+
+  </style>
+
+  <!-- PDF.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+  </script>
+  <!-- Word extractor -->
+  <script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
+</head>
+<body>
+
+<!-- Navigation Bar -->
+<div class="nav-bar">
+  <div class="nav-content">
+    <div class="nav-title">📘 Smart AI Notes</div>
+    <button class="nav-button" onclick="openUnitModal()">📚 Syllabus Units</button>
+  </div>
+</div>
+
+<div class="card">
+  <h2>📂 File Viewer</h2>
+  <p>Welcome to the syllabus management system. Use the navigation bar to select a syllabus unit to view.</p>
+</div>
+
+<!-- File Viewer -->
+<div class="card">
+  <h2>📂 File Viewer</h2>
+  <div id="statusMessage"></div>
+  <div class="viewer" id="viewer">
+    <p style="text-align: center; color: #666; margin: 40px 0;">Click on a syllabus unit above to view files</p>
+  </div>
+</div>
+
+<!-- Syllabus -->
+<div class="card" id="syllabusCard" style="display:none;">
+  <h2>📚 Available Syllabus Units</h2>
+  <div id="syllabusContent"></div>
+</div>
+
+<!-- AI Features -->
+<div class="card" id="aiCard" style="display:none;">
+  <h2>🤖 AI Assistant</h2>
+  <p>Use AI to analyze the syllabus content:</p>
+  <div style="text-align: center; margin-top: 20px;">
+    <button onclick="openChat()" style="background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px;">🤖 Open AI Chatbot</button>
+  </div>
+</div>
+
+<!-- Unit List Modal -->
+<div class="unit-modal" id="unitModal">
+  <div class="unit-modal-content">
+    <div class="unit-modal-header">
+      📚 Syllabus Units
+      <button class="unit-modal-close" onclick="closeUnitModal()">×</button>
+    </div>
+    <div class="unit-list" id="unitList"></div>
+  </div>
+</div>
+
+<!-- Chatbot Modal -->
+<div class="chat-modal" id="chatModal">
+  <div class="chat-container">
+    <div class="chat-header">
+      🤖 Smart AI Assistant
+      <button class="close-btn" onclick="closeChat()">×</button>
+    </div>
+    <div class="chat-messages" id="chat"></div>
+    <div class="chat-input">
+      <div class="chat-buttons">
+          <button onclick="selectUnits()">📚 Select Units</button>
+          <button onclick="loadAllUnitsForAI()">📥 Load All Units</button>
+          <button onclick="generateQuestions()">📝 Generate Questions</button>
+          <button onclick="summarizeContent()">📋 Summarize</button>
+          <button onclick="searchContent()">🔍 Search</button>
+        </div>
+      <textarea id="q" placeholder="Ask from syllabus..."></textarea>
+      <button onclick="ask()">Send</button>
+    </div>
+  </div>
+</div>
+
+
+
+<script>
+/* ---------- Load Syllabus from localStorage ---------- */
+const role = localStorage.getItem("role");
+let syllabusData = [];
+if(role === "student" || role === "staff"){
+  syllabusData = JSON.parse(localStorage.getItem("syllabus") || "[]");
+  const container = document.getElementById("unitList");
+
+  if(syllabusData.length === 0){
+    container.innerHTML = "<div class='status error'>No syllabus files uploaded yet. Please contact your instructor.</div>";
+  } else {
+    syllabusData.forEach((d, index) => {
+      const div = document.createElement("div");
+      div.className = "unit-item";
+      div.innerHTML = `<span class="unit-name-modal">${d.unit}: ${d.name}</span>`;
+      div.onclick = () => {
+        closeUnitModal();
+        showStatus(`Loading ${d.name}...`, "success");
+        if(d.file){
+          openSyllabusFile(d.file, d.type, d.file); // Pass file as identifier
+        } else {
+          showStatus("No file attached to this syllabus unit.", "error");
+          document.getElementById("viewer").innerHTML = "<p style='text-align: center; color: #666;'>No file available for this unit.</p>";
+          document.getElementById("textOutput").innerText = "";
+        }
+      };
+      container.appendChild(div);
+    });
+
+    // Auto-load first file
+    if(syllabusData.length > 0 && syllabusData[0].file){
+      setTimeout(() => {
+        showStatus(`Auto-loading ${syllabusData[0].name}...`, "success");
+        openSyllabusFile(syllabusData[0].file, syllabusData[0].type, syllabusData[0].file);
+      }, 1000);
+    }
+  }
+} else {
+  document.getElementById("unitList").innerHTML = "<div class='status error'>Access denied. Please login as a student or staff.</div>";
+}
+
+/* ---------- Unit Modal Functions ---------- */
+function openUnitModal() {
+  document.getElementById("unitModal").style.display = "flex";
+}
+
+function closeUnitModal() {
+  document.getElementById("unitModal").style.display = "none";
+}
+
+/* ---------- Status Messages ---------- */
+function showStatus(message, type) {
+  const statusDiv = document.getElementById("statusMessage");
+  statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+  setTimeout(() => {
+    statusDiv.innerHTML = "";
+  }, 3000);
+}
+
+/* ---------- Open file from syllabus ---------- */
+function openSyllabusFile(fileObj, type, fileKey){
+  const viewer = document.getElementById("viewer");
+  viewer.innerHTML = "<p style='text-align: center; color: #666;'>Loading file...</p>";
+
+  if(type === "pdf" || type === "application/pdf"){
+    const byteString = atob(fileObj.split(',')[1]);
+    const buffer = new ArrayBuffer(byteString.length);
+    const view = new Uint8Array(buffer);
+    for(let i=0; i<byteString.length; i++) view[i] = byteString.charCodeAt(i);
+    viewPDF(buffer, viewer, fileKey);
+  }
+  else if(type === "docx" || type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"){
+    const byteString = atob(fileObj.split(',')[1]);
+    const buffer = new ArrayBuffer(byteString.length);
+    const view = new Uint8Array(buffer);
+    for(let i=0; i<byteString.length; i++) view[i] = byteString.charCodeAt(i);
+    viewWord(buffer, viewer, fileKey);
+  }
+  else if(type && type.startsWith("image/")){
+    const img = document.createElement("img");
+    img.src = fileObj;
+    viewer.innerHTML = "";
+    viewer.appendChild(img);
+    showStatus("Image loaded successfully!", "success");
+  } else {
+    viewer.innerHTML = "<p style='text-align: center; color: #666;'>Unsupported file type.</p>";
+    showStatus("Unsupported file type", "error");
+  }
+}
+
+/* ---------- PDF Viewer ---------- */
+function viewPDF(file, viewer, fileKey){
+  const typedarray = file instanceof ArrayBuffer ? new Uint8Array(file) : new Uint8Array(file);
+  pdfjsLib.getDocument(typedarray).promise.then(async pdf => {
+    viewer.innerHTML = "";
+    const numPages = pdf.numPages;
+
+    // Render pages and collect text content
+    const renderPromises = [];
+    const textPages = [];
+
+    for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+      const pPromise = pdf.getPage(pageNum).then(async page => {
+        const viewport = page.getViewport({scale: 1.5});
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+        canvas.style.marginBottom = "10px";
+        canvas.style.border = "1px solid #ddd";
+        canvas.style.borderRadius = "4px";
+
+        viewer.appendChild(canvas);
+
+        await page.render({canvasContext: ctx, viewport}).promise;
+
+        // Extract text for AI features
+        try {
+          const textContent = await page.getTextContent();
+          const pageText = textContent.items.map(i => i.str).join(' ');
+          textPages.push(pageText);
+        } catch (e) {
+          console.warn('Could not extract text from PDF page', e);
+        }
+      });
+      renderPromises.push(pPromise);
+    }
+
+    try {
+      await Promise.all(renderPromises);
+      // Save extracted text (if any) for AI features
+      const joined = textPages.join('\n\n');
+      if (fileKey) extractedTexts[fileKey] = joined || "";
+      if (joined && joined.trim()) document.getElementById("aiCard").style.display = "block";
+      showStatus("PDF loaded successfully!", "success");
+    } catch (err) {
+      console.error('Error rendering/extracting PDF:', err);
+      showStatus("Error loading PDF", "error");
+    }
+  }).catch(error => {
+    console.error('Error loading PDF:', error);
+    viewer.innerHTML = "<p style='text-align: center; color: #666;'>Failed to load PDF. The file might be corrupted.</p>";
+    showStatus("Error loading PDF", "error");
+  });
+}
+
+/* ---------- Word Viewer ---------- */
+function viewWord(file, viewer, fileKey){
+  mammoth.extractRawText({arrayBuffer: file})
+    .then(result => {
+      const text = result.value || "";
+      // Store extracted text for AI features
+      if (fileKey) extractedTexts[fileKey] = text;
+      viewer.innerHTML = "<div style='text-align: center; padding: 40px;'><p>📄 Word document loaded successfully!</p><p style='color: #666; font-size: 14px;'>Text extracted and ready for AI analysis.</p></div>";
+      showStatus("Word document loaded successfully!", "success");
+      if (text && text.trim()) {
+        document.getElementById("aiCard").style.display = "block";
+      }
+    })
+    .catch(error => {
+      console.error('Error loading Word document:', error);
+      viewer.innerHTML = "<p style='text-align: center; color: #666;'>Failed to load Word document.</p>";
+      showStatus("Error loading Word document", "error");
+    });
+}
+
+/* ---------- Chat Functions ---------- */
+let extractedTexts = {}; // Store extracted text for AI by file identifier
+let selectedUnits = new Set(); // Track selected units for AI analysis
+let extractionInProgress = false; // Flag to track if text extraction is in progress
+
+function openChat() {
+  document.getElementById("chatModal").style.display = "flex";
+  document.getElementById("chat").innerHTML = '<div class="message ai-msg">Hello! I\'m your AI assistant. I can help you understand the syllabus content and generate questions. What can I help you with?</div>';
+}
+
+function closeChat() {
+  document.getElementById("chatModal").style.display = "none";
+}
+
+/* ---------- Extract text from a file without rendering (for bulk loading) ---------- */
+async function extractTextFromFile(fileObj, type, fileKey){
+  try{
+    if(type === "pdf" || type === "application/pdf"){
+      const byteString = atob(fileObj.split(',')[1]);
+      const buffer = new ArrayBuffer(byteString.length);
+      const view = new Uint8Array(buffer);
+      for(let i=0; i<byteString.length; i++) view[i] = byteString.charCodeAt(i);
+      const typedarray = new Uint8Array(buffer);
+      const pdf = await pdfjsLib.getDocument(typedarray).promise;
+      const pagesText = [];
+      for(let p=1; p<=pdf.numPages; p++){
+        try{
+          const page = await pdf.getPage(p);
+          const txt = await page.getTextContent();
+          pagesText.push(txt.items.map(i=>i.str).join(' '));
+        }catch(e){ console.warn('PDF page extract error', e); }
+      }
+      const joined = pagesText.join('\n\n');
+      if(fileKey) extractedTexts[fileKey] = joined;
+      if(joined && joined.trim()) document.getElementById("aiCard").style.display = "block";
+      return true;
+    }
+    if(type === "docx" || type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"){
+      const byteString = atob(fileObj.split(',')[1]);
+      const buffer = new ArrayBuffer(byteString.length);
+      const view = new Uint8Array(buffer);
+      for(let i=0; i<byteString.length; i++) view[i] = byteString.charCodeAt(i);
+      const result = await mammoth.extractRawText({arrayBuffer: buffer});
+      const text = result.value || "";
+      if(fileKey) extractedTexts[fileKey] = text;
+      if(text && text.trim()) document.getElementById("aiCard").style.display = "block";
+      return true;
+    }
+  }catch(e){
+    console.error('extractTextFromFile error', e);
+  }
+  return false;
+}
+
+/* ---------- Load all units' files into extractedTexts for AI ---------- */
+async function loadAllUnitsForAI(){
+  const chat = document.getElementById('chat');
+  const msg = document.createElement('div');
+  msg.className = 'message ai-msg';
+  msg.innerText = 'Loading unit files for AI analysis...';
+  chat.appendChild(msg);
+  chat.scrollTop = chat.scrollHeight;
+
+  const syllabusData = JSON.parse(localStorage.getItem('syllabus') || '[]');
+  if(!syllabusData.length){
+    msg.innerText = 'No syllabus units available to load.';
+    return;
+  }
+
+  let loaded = 0;
+  for(const unit of syllabusData){
+    const fileKey = unit.file || unit.unit;
+    if(unit.file && unit.type){
+      const ok = await extractTextFromFile(unit.file, unit.type, fileKey);
+      if(ok) loaded++;
+    }
+  }
+
+  msg.innerText = `✅ Loaded ${loaded} unit(s) for AI analysis.`;
+  chat.scrollTop = chat.scrollHeight;
+}
+
+/* ---------- Unit Selection Functions ---------- */
+function selectUnits() {
+  const chat = document.getElementById("chat");
+  const syllabusData = JSON.parse(localStorage.getItem("syllabus") || "[]");
+
+  // Create unit selection message
+  const unitMsg = document.createElement("div");
+  unitMsg.className = "message ai-msg";
+  unitMsg.innerHTML = "<strong>📚 Select Units for AI Analysis</strong><br>Choose which syllabus units the AI should analyze:";
+
+  // Create checkboxes container
+  const checkboxesContainer = document.createElement("div");
+  checkboxesContainer.id = "unitCheckboxes";
+  checkboxesContainer.style.marginTop = "10px";
+
+  if (syllabusData.length === 0) {
+    checkboxesContainer.innerHTML = "<p>No syllabus units available.</p>";
+  } else {
+    syllabusData.forEach((unit, index) => {
+      const checkboxDiv = document.createElement("div");
+      checkboxDiv.className = "unit-checkbox";
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.id = `unit-${index}`;
+      checkbox.value = unit.file || unit.unit;
+      checkbox.checked = selectedUnits.has(unit.file || unit.unit);
+
+      const label = document.createElement("label");
+      label.htmlFor = `unit-${index}`;
+      label.innerHTML = `<strong>${unit.unit}</strong>: ${unit.name}`;
+
+      checkboxDiv.appendChild(checkbox);
+      checkboxDiv.appendChild(label);
+      checkboxesContainer.appendChild(checkboxDiv);
+    });
+  }
+
+  unitMsg.appendChild(checkboxesContainer);
+
+  // Create buttons
+  const buttonsDiv = document.createElement("div");
+  buttonsDiv.className = "unit-selector-buttons";
+  buttonsDiv.style.marginTop = "10px";
+
+  const confirmBtn = document.createElement("button");
+  confirmBtn.innerText = "Confirm Selection";
+  confirmBtn.onclick = confirmUnitSelection;
+  confirmBtn.style.background = "#667eea";
+  confirmBtn.style.color = "white";
+  confirmBtn.style.border = "none";
+  confirmBtn.style.padding = "8px 12px";
+  confirmBtn.style.borderRadius = "4px";
+  confirmBtn.style.cursor = "pointer";
+
+  buttonsDiv.appendChild(confirmBtn);
+  unitMsg.appendChild(buttonsDiv);
+
+  chat.appendChild(unitMsg);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function confirmUnitSelection() {
+  const checkboxes = document.querySelectorAll("#unitCheckboxes input[type='checkbox']");
+  selectedUnits.clear();
+
+  checkboxes.forEach(checkbox => {
+    if (checkbox.checked) {
+      selectedUnits.add(checkbox.value);
+    }
+  });
+
+  // Show confirmation message
+  const chat = document.getElementById("chat");
+  const confirmMsg = document.createElement("div");
+  confirmMsg.className = "message ai-msg";
+  confirmMsg.innerText = `✅ Selected ${selectedUnits.size} unit(s) for AI analysis.`;
+  chat.appendChild(confirmMsg);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+/* ---------- AI Feature Functions ---------- */
+async function generateQuestions() {
+  const chat = document.getElementById("chat");
+
+  // Get selected units' texts or all texts if none selected
+  let content = "";
+  if (selectedUnits.size > 0) {
+    const syllabusData = JSON.parse(localStorage.getItem("syllabus") || "[]");
+    const selectedTexts = [];
+    syllabusData.forEach(unit => {
+      const fileKey = unit.file || unit.unit;
+      if (selectedUnits.has(fileKey) && extractedTexts[fileKey]) {
+        selectedTexts.push(extractedTexts[fileKey]);
+      }
+    });
+    content = selectedTexts.join(" ");
+  } else {
+    content = Object.values(extractedTexts).join(" ");
+  }
+
+  if (!content.trim()) {
+    const errorMsg = document.createElement("div");
+    errorMsg.className = "message ai-msg";
+    errorMsg.innerText = "No content available for question generation. Please click on syllabus units above to load their content, or select specific units using the '📚 Select Units' button.";
+    chat.appendChild(errorMsg);
+    chat.scrollTop = chat.scrollHeight;
+    return;
+  }
+
+  // Add AI "typing" bubble
+  const aiBubble = document.createElement("div");
+  aiBubble.className = "message ai-msg";
+  aiBubble.innerText = "Generating questions...";
+  chat.appendChild(aiBubble);
+  chat.scrollTop = chat.scrollHeight;
+
+  try {
+    const res = await fetch("http://localhost:5000/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: "Generate 5 important questions based on this syllabus content:",
+        content: content
+      })
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      aiBubble.innerText = data.response;
+    } else {
+      aiBubble.innerText = "Error: " + (data.error || "Could not generate questions.");
+    }
+    chat.scrollTop = chat.scrollHeight;
+  } catch (e) {
+    aiBubble.innerText = "Error: Could not connect to AI service.";
+    console.error("Question generation error:", e);
+  }
+}
+
+async function summarizeContent() {
+  const chat = document.getElementById("chat");
+
+  // Get selected units' texts or all texts if none selected
+  let content = "";
+  if (selectedUnits.size > 0) {
+    const syllabusData = JSON.parse(localStorage.getItem("syllabus") || "[]");
+    const selectedTexts = [];
+    syllabusData.forEach(unit => {
+      const fileKey = unit.file || unit.unit;
+      if (selectedUnits.has(fileKey) && extractedTexts[fileKey]) {
+        selectedTexts.push(extractedTexts[fileKey]);
+      }
+    });
+    content = selectedTexts.join(" ");
+  } else {
+    content = Object.values(extractedTexts).join(" ");
+  }
+
+  if (!content.trim()) {
+    const errorMsg = document.createElement("div");
+    errorMsg.className = "message ai-msg";
+    errorMsg.innerText = "No content available for summarization. Please click on syllabus units above to load their content, or select specific units using the '📚 Select Units' button.";
+    chat.appendChild(errorMsg);
+    chat.scrollTop = chat.scrollHeight;
+    return;
+  }
+
+  // Add AI "typing" bubble
+  const aiBubble = document.createElement("div");
+  aiBubble.className = "message ai-msg";
+  aiBubble.innerText = "Summarizing content...";
+  chat.appendChild(aiBubble);
+  chat.scrollTop = chat.scrollHeight;
+
+  try {
+    const res = await fetch("http://localhost:5000/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: "Provide a concise summary of this syllabus content:",
+        content: content
+      })
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      aiBubble.innerText = data.response;
+    } else {
+      aiBubble.innerText = "Error: " + (data.error || "Could not summarize content.");
+    }
+    chat.scrollTop = chat.scrollHeight;
+  } catch (e) {
+    aiBubble.innerText = "Error: Could not connect to AI service.";
+    console.error("Summarization error:", e);
+  }
+}
+
+async function searchContent() {
+  const query = prompt("Enter search term:");
+  if (!query || !query.trim()) return;
+
+  const chat = document.getElementById("chat");
+
+  // Get selected units' texts or all texts if none selected
+  let content = "";
+  if (selectedUnits.size > 0) {
+    const syllabusData = JSON.parse(localStorage.getItem("syllabus") || "[]");
+    const selectedTexts = [];
+    syllabusData.forEach(unit => {
+      const fileKey = unit.file || unit.unit;
+      if (selectedUnits.has(fileKey) && extractedTexts[fileKey]) {
+        selectedTexts.push(extractedTexts[fileKey]);
+      }
+    });
+    content = selectedTexts.join(" ");
+  } else {
+    content = Object.values(extractedTexts).join(" ");
+  }
+
+  if (!content.trim()) {
+    const errorMsg = document.createElement("div");
+    errorMsg.className = "message ai-msg";
+    errorMsg.innerText = "No content available for search. Please select units or ensure files are loaded.";
+    chat.appendChild(errorMsg);
+    chat.scrollTop = chat.scrollHeight;
+    return;
+  }
+
+  // Add AI "typing" bubble
+  const aiBubble = document.createElement("div");
+  aiBubble.className = "message ai-msg";
+  aiBubble.innerText = `Searching for "${query}"...`;
+  chat.appendChild(aiBubble);
+  chat.scrollTop = chat.scrollHeight;
+
+  try {
+    const res = await fetch("http://localhost:5000/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: `Search for and explain information about "${query}" in this syllabus content:`,
+        content: content
+      })
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      aiBubble.innerText = data.response;
+    } else {
+      aiBubble.innerText = "Error: " + (data.error || "Could not perform search.");
+    }
+    chat.scrollTop = chat.scrollHeight;
+  } catch (e) {
+    aiBubble.innerText = "Error: Could not connect to AI service.";
+    console.error("Search error:", e);
+  }
+}
+
+async function ask(){
+  let q = document.getElementById("q").value.trim();
+  let chat = document.getElementById("chat");
+  if(!q){alert("Enter question"); return;}
+
+  // Add user's message
+  let userBubble = document.createElement("div");
+  userBubble.className = "message user-msg";
+  userBubble.innerText = q;
+  chat.appendChild(userBubble);
+  chat.scrollTop = chat.scrollHeight;
+  document.getElementById("q").value = "";
+
+  // Add AI "typing" bubble
+  let aiBubble = document.createElement("div");
+  aiBubble.className = "message ai-msg";
+  aiBubble.innerText = "Thinking...";
+  chat.appendChild(aiBubble);
+  chat.scrollTop = chat.scrollHeight;
+
+  // Get selected units' texts or all texts if none selected
+  let content = "";
+  if (selectedUnits.size > 0) {
+    const syllabusData = JSON.parse(localStorage.getItem("syllabus") || "[]");
+    const selectedTexts = [];
+    syllabusData.forEach(unit => {
+      const fileKey = unit.file || unit.unit;
+      if (selectedUnits.has(fileKey) && extractedTexts[fileKey]) {
+        selectedTexts.push(extractedTexts[fileKey]);
+      }
+    });
+    content = selectedTexts.join(" ");
+  } else {
+    content = Object.values(extractedTexts).join(" ");
+  }
+
+  if (!content.trim()) {
+    aiBubble.innerText = "No content available for analysis. Please select units or ensure files are loaded.";
+    chat.scrollTop = chat.scrollHeight;
+    return;
+  }
+
+  try {
+    const res = await fetch("http://localhost:5000/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: q,
+        content: content
+      })
+    });
+
+    const data = await res.json();
+    if(data.success){
+      aiBubble.innerText = data.response;
+    } else {
+      aiBubble.innerText = "Error: " + (data.error || "Could not get response.");
+    }
+    chat.scrollTop = chat.scrollHeight;
+  } catch(e) {
+    aiBubble.innerText = "Error: Could not connect to AI service. Make sure the backend is running.";
+    console.error("Chat error:", e);
+  }
+}
+</script>
+
+<!-- Blinking Chatbot Icon -->
+<div class="chatbot-icon" onclick="openChat()">🤖</div>
+
+</body>
+</html>
