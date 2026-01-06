@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Smart AI Notes - Login</title>
+<style>
+body{
+ margin:0;
+ height:100vh;
+ display:flex;
+ justify-content:center;
+ align-items:center;
+ background:linear-gradient(to right,#667eea,#764ba2);
+ font-family:Arial;
+}
+.card{
+ background:#fff;
+ width:330px;
+ padding:25px;
+ border-radius:12px;
+ box-shadow:0 10px 25px rgba(0,0,0,.25);
+}
+input,select,button{
+ width:100%;
+ padding:10px;
+ margin-bottom:12px;
+ border-radius:6px;
+ border:1px solid #ccc;
+}
+button{
+ background:#667eea;
+ color:white;
+ border:none;
+ font-size:16px;
+ cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<form class="card" onsubmit="return login()">
+<h2 align="center">Smart AI Notes</h2>
+<p align="center" style="color:gray">Login to continue</p>
+
+<select id="role" required>
+<option value="">Select User</option>
+<option value="staff">Staff</option>
+<option value="student">Student</option>
+</select>
+
+<input id="user" placeholder="Username" required>
+<input id="pass" type="password" placeholder="Password" required>
+
+<button>Login</button>
+</form>
+
+<script>
+function login(){
+ let r=role.value,u=user.value,p=pass.value;
+
+ if(r==="staff" && u==="staff" && p==="1234"){
+   localStorage.setItem("role","staff");
+   location="staff/dashboard.html";
+ }
+ else if(r==="student" && u==="student" && p==="1234"){
+   localStorage.setItem("role","student");
+   location="student/dashboard.html";
+ }
+ else alert("Invalid Login");
+
+ return false;
+}
+</script>
+</body>
+</html>
