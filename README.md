@@ -110,12 +110,14 @@ smart-ai-notes/
 ## Usage Instructions
 
 ### For Staff:
+id - staff   pass - 1234
 1. Login as staff
 2. Go to Upload page
 3. Select unit and upload files
 4. Files are stored locally
 
 ### For Students:
+id - student  pass - 1234
 1. Login as student
 2. View syllabus units
 3. Click on unit names to open files
@@ -145,3 +147,4 @@ smart-ai-notes/
 ## License
 
 This project is for educational purposes.
+
