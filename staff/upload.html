@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Upload Syllabus</title>
+<style>
+body{font-family:Arial;background:#f4f6fb;padding:20px}
+.card{background:white;padding:20px;border-radius:10px;width:350px}
+</style>
+</head>
+<body>
+
+<script>
+if(localStorage.getItem("role")!=="staff") location="../index.html";
+
+function upload(){
+ let unit=document.getElementById("unit").value;
+ let file=document.getElementById("file").files[0];
+ if(!file){alert("Select file");return;}
+
+ let fileType = file.type;
+ let type;
+ if(fileType === "application/pdf") type = "pdf";
+ else if(fileType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") type = "docx";
+ else if(fileType.startsWith("image/")) type = "image";
+ else {alert("Unsupported file type. Only PDF, DOCX, and images are supported."); return;}
+
+ let reader = new FileReader();
+ reader.onload = function(e) {
+   let data=JSON.parse(localStorage.getItem("syllabus")||"[]");
+   let existingIndex = data.findIndex(item => item.unit === unit && item.name === file.name);
+   if(existingIndex !== -1){
+     data[existingIndex] = {unit:unit, name:file.name, type:type, file:e.target.result};
+   } else {
+     data.push({unit:unit, name:file.name, type:type, file:e.target.result});
+   }
+   localStorage.setItem("syllabus",JSON.stringify(data));
+   alert("Uploaded successfully");
+   loadExisting();
+ };
+ reader.readAsDataURL(file);
+}
+
+function loadExisting(){
+ let data=JSON.parse(localStorage.getItem("syllabus")||"[]");
+ let div=document.getElementById("existing");
+ div.innerHTML="<h3>Existing Syllabus</h3>";
+ data.forEach((d,index)=>{
+   let item=document.createElement("div");
+   item.innerHTML=`<b>${d.unit}</b>: ${d.name} ${d.file ? '(Has file)' : '<button onclick="reupload('+index+')">Re-upload</button>'}`;
+   div.appendChild(item);
+ });
+}
+
+function reupload(index){
+ let data=JSON.parse(localStorage.getItem("syllabus")||"[]");
+ let d=data[index];
+ document.getElementById("unit").value=d.unit;
+ alert("Please select the file for "+d.name+" and click upload to update.");
+}
+
+loadExisting();
+</script>
+
+<div class="card">
+<h2>Upload Syllabus</h2>
+<select id="unit">
+<option>Unit 1</option>
+<option>Unit 2</option>
+<option>Unit 3</option>
+<option>Unit 4</option>
+</select><br><br>
+
+<input type="file" id="file"><br><br>
+<button onclick="upload()">Upload</button>
+</div>
+
+<div id="existing"></div>
+
+</body>
+</html>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Staff Syllabus</title>
+<style>
+body{font-family:Arial;background:#f4f6fb;padding:20px}
+.box{background:white;padding:10px;border-radius:8px;margin-bottom:10px}
+</style>
+</head>
+<body>
+
+<script>
+if(localStorage.getItem("role")!=="staff") location="../index.html";
+
+let data=JSON.parse(localStorage.getItem("syllabus")||"[]");
+document.write("<h2>Uploaded Files</h2>");
+data.forEach(d=>{
+ document.write(`<div class='box'><b>${d.unit}</b><br>${d.name}</div>`);
+});
+</script>
+
+</body>
+</html>
