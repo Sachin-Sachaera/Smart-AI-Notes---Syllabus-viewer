@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI Assistant Chat</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #f4f6fb;
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
+    .chat-container {
+      width: 400px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      height: 600px;
+      overflow: hidden;
+    }
+    .chat-header {
+      padding: 15px;
+      background: #667eea;
+      color: white;
+      font-weight: bold;
+      text-align: center;
+    }
+    .chat-messages {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: #e5ddd5;
+    }
+    .message {
+      max-width: 70%;
+      padding: 10px 15px;
+      border-radius: 20px;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+    }
+    .user-msg {
+      background: #667eea;
+      color: white;
+      align-self: flex-end;
+      border-bottom-right-radius: 0;
+    }
+    .ai-msg {
+      background: #f1f0f0;
+      color: black;
+      align-self: flex-start;
+      border-bottom-left-radius: 0;
+    }
+    .chat-input {
+      display: flex;
+      border-top: 1px solid #ddd;
+    }
+    .chat-input textarea {
+      flex: 1;
+      border: none;
+      padding: 10px;
+      border-radius: 0;
+      resize: none;
+      font-size: 14px;
+    }
+    .chat-input button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 0 20px;
+      cursor: pointer;
+    }
+    .chat-input button:hover {
+      background: #556cd6;
+    }
+  </style>
+</head>
+<body>
+
+<script>
+if(localStorage.getItem("role")!=="student") location="../index.html";
+</script>
+
+<div class="chat-container">
+  <div class="chat-header">🤖 Smart AI Assistant</div>
+  <div class="chat-messages" id="chat"></div>
+  <div class="chat-input">
+    <textarea id="q" placeholder="Ask from syllabus..."></textarea>
+    <button onclick="ask()">Send</button>
+  </div>
+</div>
+
+<script>
+async function ask(){
+  let q = document.getElementById("q").value.trim();
+  let chat = document.getElementById("chat");
+  if(!q){alert("Enter question"); return;}
+  
+  // Add user's message
+  let userBubble = document.createElement("div");
+  userBubble.className = "message user-msg";
+  userBubble.innerText = q;
+  chat.appendChild(userBubble);
+  chat.scrollTop = chat.scrollHeight;
+  document.getElementById("q").value = "";
+
+  // Add AI "typing" bubble
+  let aiBubble = document.createElement("div");
+  aiBubble.className = "message ai-msg";
+  aiBubble.innerText = "Thinking...";
+  chat.appendChild(aiBubble);
+  chat.scrollTop = chat.scrollHeight;
+
+  try {
+    const res = await fetch("http://localhost:5000/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: q,
+        content: localStorage.getItem("syllabusContent") || ""
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      aiBubble.innerText = data.response;
+    } else {
+      aiBubble.innerText = "Error: " + (data.error || "Could not get response.");
+    }
+    chat.scrollTop = chat.scrollHeight;
+  } catch(e) {
+    aiBubble.innerText = "Error: Could not connect to AI service. Make sure the backend is running.";
+  }
+}
+</script>
+
+</body>
+</html>
