@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Staff Dashboard</title>
+<style>
+body{font-family:Arial;background:#f4f6fb;padding:20px}
+a{margin-right:15px;color:#667eea;font-weight:bold;text-decoration:none}
+</style>
+</head>
+<body>
+
+<script>
+if(localStorage.getItem("role")!=="staff") location="../index.html";
+</script>
+
+<h2>Staff Dashboard</h2>
+<a href="upload.html">Upload Syllabus</a>
+<a href="syllabus.html">View Syllabus</a>
+<a href="../index.html" onclick="localStorage.clear()">Logout</a>
+
+</body>
+</html>
