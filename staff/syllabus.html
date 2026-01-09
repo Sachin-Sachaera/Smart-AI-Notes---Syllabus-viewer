@@ -1,10 +1,167 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <title>Staff Syllabus</title>
 <style>
-body{font-family:Arial;background:#f4f6fb;padding:20px}
-.box{background:white;padding:10px;border-radius:8px;margin-bottom:10px}
+:root {
+  --primary: #667eea;
+  --primary-hover: #556cd6;
+  --bg: #f4f6fb;
+  --text: #111;
+  --text-muted: #6b7280;
+  --white: #fff;
+  --shadow: rgba(0, 0, 0, 0.1);
+  --border: #e6e9ef;
+  --success: #10b981;
+  --warning: #f59e0b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  flex: 1;
+}
+
+h2 {
+  margin: 0 0 24px 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text);
+  text-align: center;
+}
+
+.box {
+  background: var(--white);
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 12px var(--shadow);
+  border: 1px solid var(--border);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px var(--shadow);
+}
+
+.box b {
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.box .file-name {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.box .file-status {
+  font-size: 12px;
+  color: var(--text-muted);
+  background: var(--success);
+  color: var(--white);
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+.delete-btn {
+  background: #dc2626;
+  color: var(--white);
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.delete-btn:hover {
+  background: #b91c1c;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-muted);
+}
+
+.empty-state h3 {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 14px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.box {
+  animation: fadeIn 0.4s ease-out;
+}
+
+@media (max-width: 768px) {
+  body {
+    padding: 16px;
+  }
+  h2 {
+    font-size: 24px;
+  }
+  .box {
+    padding: 14px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 12px;
+  }
+  h2 {
+    font-size: 20px;
+  }
+  .box {
+    padding: 12px;
+  }
+}
 </style>
 </head>
 <body>
@@ -12,11 +169,42 @@ body{font-family:Arial;background:#f4f6fb;padding:20px}
 <script>
 if(localStorage.getItem("role")!=="staff") location="../index.html";
 
-let data=JSON.parse(localStorage.getItem("syllabus")||"[]");
-document.write("<h2>Uploaded Files</h2>");
-data.forEach(d=>{
- document.write(`<div class='box'><b>${d.unit}</b><br>${d.name}</div>`);
-});
+let currentStaff = JSON.parse(localStorage.getItem("staff")) || {};
+let allData = JSON.parse(localStorage.getItem("syllabus")||"[]");
+// Filter data to only show files uploaded by current staff for their course
+let data = allData.filter(d => d.staffUser === currentStaff.user && d.course === currentStaff.course);
+
+function deleteItem(index){
+ if(confirm("Are you sure you want to delete this syllabus item? This action cannot be undone.")){
+   // Find the actual index in the full data array
+   let actualIndex = allData.findIndex(item => item.staffUser === currentStaff.user && item.unit === data[index].unit && item.name === data[index].name);
+   if(actualIndex !== -1){
+     allData.splice(actualIndex, 1);
+     localStorage.setItem("syllabus",JSON.stringify(allData));
+     location.reload();
+   }
+ }
+}
+
+if(data.length === 0){
+  document.write(`
+    <div class="container">
+      <h2>Your Uploaded Syllabus Files</h2>
+      <div class="empty-state">
+        <h3>No files uploaded yet</h3>
+        <p>Upload syllabus files from the dashboard to see them here.</p>
+      </div>
+    </div>
+  `);
+} else {
+  document.write("<div class='container'><h2>Your Uploaded Syllabus Files</h2>");
+  data.forEach((d, index)=>{
+    let status = d.file ? '<span class="file-status">File Available</span>' : '<span class="file-status" style="background: var(--warning);">No File</span>';
+    let deleteBtn = `<button class="delete-btn" onclick="deleteItem(${index})">Delete</button>`;
+    document.write(`<div class='box'><div><b>${d.unit}</b><br><span class="file-name">${d.name}</span></div><div style="display: flex; align-items: center; gap: 8px;">${status}${deleteBtn}</div></div>`);
+  });
+  document.write("</div>");
+}
 </script>
 
 </body>
