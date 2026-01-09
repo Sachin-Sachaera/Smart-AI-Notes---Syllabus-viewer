@@ -60,7 +60,6 @@ powershell -ExecutionPolicy Bypass -File set-env.ps1
    - Type questions in the chat
    - Click "📝 Generate Questions"
    - Click "📋 Summarize"
-   - Click "🔍 Search" and enter a search term
 
 ## Troubleshooting
 
@@ -75,3 +74,4 @@ If you continue having issues, please share:
 1. The exact error message
 2. Your operating system
 3. Whether Node.js is installed (run `node --version`)
+
