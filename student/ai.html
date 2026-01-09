@@ -2,6 +2,15 @@
 <html>
 <head>
   <title>AI Assistant Chat</title>
+
+  <!-- PDF.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+  </script>
+  <!-- Word extractor -->
+  <script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
+
   <style>
     body {
       font-family: Arial;
@@ -85,7 +94,12 @@
 if(localStorage.getItem("role")!=="student") location="../index.html";
 </script>
 
-<div class="chat-container">
+<!-- Home Icon -->
+<div style="position: absolute; top: 20px; left: 20px; z-index: 1000;">
+  <a href="dashboard.html" style="font-size: 48px; text-decoration: none; color: #667eea;" title="Home">🏠</a>
+</div>
+
+<div class="chat-container" style="margin-top:20px;">
   <div class="chat-header">🤖 Smart AI Assistant</div>
   <div class="chat-messages" id="chat"></div>
   <div class="chat-input">
@@ -95,11 +109,450 @@ if(localStorage.getItem("role")!=="student") location="../index.html";
 </div>
 
 <script>
+// Store extracted text for AI by file identifier
+let extractedTexts = {};
+
+// Load syllabus data
+const role = localStorage.getItem("role");
+let syllabusData = [];
+if(role === "student" || role === "staff"){
+  syllabusData = JSON.parse(localStorage.getItem("syllabus") || "[]");
+}
+
+// Chat Functions
+let selectedUnits = new Set(); // Track selected units for AI analysis
+
+function openChat() {
+  document.getElementById("chatModal").style.display = "flex";
+  document.getElementById("chatModalMessages").innerHTML = '<div class="message-modal ai-msg">Hello! I\'m your AI assistant. I can help you understand the syllabus content and generate questions. What can I help you with?</div>';
+}
+
+function closeChat() {
+  document.getElementById("chatModal").style.display = "none";
+}
+
+// Add Enter key listener for sending messages
+document.getElementById("q").addEventListener("keydown", function(event) {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    ask();
+  }
+});
+
+/* ---------- Extract text from a file without rendering (for bulk loading) ---------- */
+async function extractTextFromFile(fileObj, type, fileKey){
+  try{
+    if(type === "pdf" || type === "application/pdf"){
+      const byteString = atob(fileObj.split(',')[1]);
+      const buffer = new ArrayBuffer(byteString.length);
+      const view = new Uint8Array(buffer);
+      for(let i=0; i<byteString.length; i++) view[i] = byteString.charCodeAt(i);
+      const typedarray = new Uint8Array(buffer);
+      const pdf = await pdfjsLib.getDocument(typedarray).promise;
+      const pagesText = [];
+      for(let p=1; p<=pdf.numPages; p++){
+        try{
+          const page = await pdf.getPage(p);
+          const txt = await page.getTextContent();
+          pagesText.push(txt.items.map(i=>i.str).join(' '));
+        }catch(e){ console.warn('PDF page extract error', e); }
+      }
+      const joined = pagesText.join('\n\n');
+      if(fileKey) extractedTexts[fileKey] = joined;
+      return true;
+    }
+    if(type === "docx" || type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"){
+      const byteString = atob(fileObj.split(',')[1]);
+      const buffer = new ArrayBuffer(byteString.length);
+      const view = new Uint8Array(buffer);
+      for(let i=0; i<byteString.length; i++) view[i] = byteString.charCodeAt(i);
+      const result = await mammoth.extractRawText({arrayBuffer: buffer});
+      const text = result.value || "";
+      if(fileKey) extractedTexts[fileKey] = text;
+      return true;
+    }
+  }catch(e){
+    console.error('extractTextFromFile error', e);
+  }
+  return false;
+}
+
+/* ---------- Load all units' files into extractedTexts for AI ---------- */
+async function loadAllUnitsForAI(){
+  const chat = document.getElementById('chatModalMessages');
+  const msg = document.createElement('div');
+  msg.className = 'message-modal ai-msg';
+  msg.innerText = 'Loading unit files for AI analysis...';
+  chat.appendChild(msg);
+  chat.scrollTop = chat.scrollHeight;
+
+  const syllabusData = JSON.parse(localStorage.getItem('syllabus') || '[]');
+  if(!syllabusData.length){
+    msg.innerText = 'No syllabus units available to load.';
+    return;
+  }
+
+  let loaded = 0;
+  for(const unit of syllabusData){
+    const fileKey = unit.file || unit.unit;
+    if(unit.file && unit.type){
+      const ok = await extractTextFromFile(unit.file, unit.type, fileKey);
+      if(ok) loaded++;
+    }
+  }
+
+  msg.innerText = `✅ Loaded ${loaded} unit(s) for AI analysis.`;
+  chat.scrollTop = chat.scrollHeight;
+}
+
+/* ---------- Unit Selection Functions ---------- */
+function selectUnits() {
+  const chat = document.getElementById("chatModalMessages");
+  const syllabusData = JSON.parse(localStorage.getItem("syllabus") || "[]");
+
+  // Create unit selection message
+  const unitMsg = document.createElement("div");
+  unitMsg.className = "message-modal ai-msg";
+  unitMsg.innerHTML = "<strong>📚 Select Units for AI Analysis</strong><br>Choose which syllabus units the AI should analyze:";
+
+  // Create checkboxes container
+  const checkboxesContainer = document.createElement("div");
+  checkboxesContainer.id = "unitCheckboxes";
+  checkboxesContainer.style.marginTop = "10px";
+
+  if (syllabusData.length === 0) {
+    checkboxesContainer.innerHTML = "<p>No syllabus units available.</p>";
+  } else {
+    syllabusData.forEach((unit, index) => {
+      const checkboxDiv = document.createElement("div");
+      checkboxDiv.className = "unit-checkbox";
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.id = `unit-${index}`;
+      checkbox.value = unit.file || unit.unit;
+      checkbox.checked = selectedUnits.has(unit.file || unit.unit);
+
+      const label = document.createElement("label");
+      label.htmlFor = `unit-${index}`;
+      label.innerHTML = `<strong>${unit.unit}</strong>: ${unit.name}`;
+
+      checkboxDiv.appendChild(checkbox);
+      checkboxDiv.appendChild(label);
+      checkboxesContainer.appendChild(checkboxDiv);
+    });
+  }
+
+  unitMsg.appendChild(checkboxesContainer);
+
+  // Create buttons
+  const buttonsDiv = document.createElement("div");
+  buttonsDiv.className = "unit-selector-buttons";
+  buttonsDiv.style.marginTop = "10px";
+
+  const confirmBtn = document.createElement("button");
+  confirmBtn.innerText = "Confirm Selection";
+  confirmBtn.onclick = confirmUnitSelection;
+  confirmBtn.style.background = "#667eea";
+  confirmBtn.style.color = "white";
+  confirmBtn.style.border = "none";
+  confirmBtn.style.padding = "8px 12px";
+  confirmBtn.style.borderRadius = "4px";
+  confirmBtn.style.cursor = "pointer";
+
+  buttonsDiv.appendChild(confirmBtn);
+  unitMsg.appendChild(buttonsDiv);
+
+  chat.appendChild(unitMsg);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function confirmUnitSelection() {
+  const checkboxes = document.querySelectorAll("#unitCheckboxes input[type='checkbox']");
+  selectedUnits.clear();
+
+  checkboxes.forEach(checkbox => {
+    if (checkbox.checked) {
+      selectedUnits.add(checkbox.value);
+    }
+  });
+
+  // Show confirmation message
+  const chat = document.getElementById("chatModalMessages");
+  const confirmMsg = document.createElement("div");
+  confirmMsg.className = "message-modal ai-msg";
+  confirmMsg.innerText = `✅ Selected ${selectedUnits.size} unit(s) for AI analysis.`;
+  chat.appendChild(confirmMsg);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+/* ---------- AI Feature Functions ---------- */
+async function generateQuestions() {
+  const chat = document.getElementById("chatModalMessages");
+
+  // Get selected units' texts or all texts if none selected
+  let content = "";
+  if (selectedUnits.size > 0) {
+    const syllabusData = JSON.parse(localStorage.getItem("syllabus") || "[]");
+    const selectedTexts = [];
+    syllabusData.forEach(unit => {
+      const fileKey = unit.file || unit.unit;
+      if (selectedUnits.has(fileKey) && extractedTexts[fileKey]) {
+        selectedTexts.push(extractedTexts[fileKey]);
+      }
+    });
+    content = selectedTexts.join(" ");
+  } else {
+    content = Object.values(extractedTexts).join(" ");
+  }
+
+  if (!content.trim()) {
+    const errorMsg = document.createElement("div");
+    errorMsg.className = "message-modal ai-msg";
+    errorMsg.innerText = "No content available for question generation. Please click on syllabus units above to load their content, or select specific units using the '📚 Select Units' button.";
+    chat.appendChild(errorMsg);
+    chat.scrollTop = chat.scrollHeight;
+    return;
+  }
+
+  // Add AI "typing" bubble
+  const aiBubble = document.createElement("div");
+  aiBubble.className = "message-modal ai-msg";
+  aiBubble.innerText = "Generating questions...";
+  chat.appendChild(aiBubble);
+  chat.scrollTop = chat.scrollHeight;
+
+  try {
+    const res = await fetch("http://localhost:5000/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: "Generate 5 important questions based on this syllabus content:",
+        content: content
+      })
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      typeWriter(aiBubble, data.response);
+    } else {
+      typeWriter(aiBubble, "Error: " + (data.error || "Could not generate questions."));
+    }
+    chat.scrollTop = chat.scrollHeight;
+  } catch (e) {
+    aiBubble.innerText = "Error: Could not connect to AI service.";
+    console.error("Question generation error:", e);
+  }
+}
+
+async function summarizeContent() {
+  const chat = document.getElementById("chatModalMessages");
+
+  // Get selected units' texts or all texts if none selected
+  let content = "";
+  if (selectedUnits.size > 0) {
+    const syllabusData = JSON.parse(localStorage.getItem("syllabus") || "[]");
+    const selectedTexts = [];
+    syllabusData.forEach(unit => {
+      const fileKey = unit.file || unit.unit;
+      if (selectedUnits.has(fileKey) && extractedTexts[fileKey]) {
+        selectedTexts.push(extractedTexts[fileKey]);
+      }
+    });
+    content = selectedTexts.join(" ");
+  } else {
+    content = Object.values(extractedTexts).join(" ");
+  }
+
+  if (!content.trim()) {
+    const errorMsg = document.createElement("div");
+    errorMsg.className = "message-modal ai-msg";
+    errorMsg.innerText = "No content available for summarization. Please click on syllabus units above to load their content, or select specific units using the '📚 Select Units' button.";
+    chat.appendChild(errorMsg);
+    chat.scrollTop = chat.scrollHeight;
+    return;
+  }
+
+  // Add AI "typing" bubble
+  const aiBubble = document.createElement("div");
+  aiBubble.className = "message-modal ai-msg";
+  aiBubble.innerText = "Summarizing content...";
+  chat.appendChild(aiBubble);
+  chat.scrollTop = chat.scrollHeight;
+
+  try {
+    const res = await fetch("http://localhost:5000/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: "Provide a concise summary of this syllabus content:",
+        content: content
+      })
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      aiBubble.innerText = data.response;
+    } else {
+      aiBubble.innerText = "Error: " + (data.error || "Could not summarize content.");
+    }
+    chat.scrollTop = chat.scrollHeight;
+  } catch (e) {
+    aiBubble.innerText = "Error: Could not connect to AI service.";
+    console.error("Summarization error:", e);
+  }
+}
+
+async function searchContent() {
+  const query = prompt("Enter search term:");
+  if (!query || !query.trim()) return;
+
+  const chat = document.getElementById("chatModalMessages");
+
+  // Get selected units' texts or all texts if none selected
+  let content = "";
+  if (selectedUnits.size > 0) {
+    const syllabusData = JSON.parse(localStorage.getItem("syllabus") || "[]");
+    const selectedTexts = [];
+    syllabusData.forEach(unit => {
+      const fileKey = unit.file || unit.unit;
+      if (selectedUnits.has(fileKey) && extractedTexts[fileKey]) {
+        selectedTexts.push(extractedTexts[fileKey]);
+      }
+    });
+    content = selectedTexts.join(" ");
+  } else {
+    content = Object.values(extractedTexts).join(" ");
+  }
+
+  if (!content.trim()) {
+    const errorMsg = document.createElement("div");
+    errorMsg.className = "message-modal ai-msg";
+    errorMsg.innerText = "No content available for search. Please select units or ensure files are loaded.";
+    chat.appendChild(errorMsg);
+    chat.scrollTop = chat.scrollHeight;
+    return;
+  }
+
+  // Add AI "typing" bubble
+  const aiBubble = document.createElement("div");
+  aiBubble.className = "message-modal ai-msg";
+  aiBubble.innerText = `Searching for "${query}"...`;
+  chat.appendChild(aiBubble);
+  chat.scrollTop = chat.scrollHeight;
+
+  try {
+    const res = await fetch("http://localhost:5000/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: `Search for and explain information about "${query}" in this syllabus content:`,
+        content: content
+      })
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      aiBubble.innerText = data.response;
+    } else {
+      aiBubble.innerText = "Error: " + (data.error || "Could not perform search.");
+    }
+    chat.scrollTop = chat.scrollHeight;
+  } catch (e) {
+    aiBubble.innerText = "Error: Could not connect to AI service.";
+    console.error("Search error:", e);
+  }
+}
+
+async function askModal(){
+  let q = document.getElementById("qModal").value.trim();
+  let chat = document.getElementById("chatModalMessages");
+  if(!q){alert("Enter question"); return;}
+
+  // Add user's message
+  let userBubble = document.createElement("div");
+  userBubble.className = "message-modal user-msg";
+  userBubble.innerText = q;
+  chat.appendChild(userBubble);
+  chat.scrollTop = chat.scrollHeight;
+  document.getElementById("qModal").value = "";
+
+  // Add AI "typing" bubble
+  let aiBubble = document.createElement("div");
+  aiBubble.className = "message-modal ai-msg";
+  aiBubble.innerText = "Thinking...";
+  chat.appendChild(aiBubble);
+  chat.scrollTop = chat.scrollHeight;
+
+  // Get selected units' texts or all texts if none selected
+  let content = "";
+  if (selectedUnits.size > 0) {
+    const syllabusData = JSON.parse(localStorage.getItem("syllabus") || "[]");
+    const selectedTexts = [];
+    syllabusData.forEach(unit => {
+      const fileKey = unit.file || unit.unit;
+      if (selectedUnits.has(fileKey) && extractedTexts[fileKey]) {
+        selectedTexts.push(extractedTexts[fileKey]);
+      }
+    });
+    content = selectedTexts.join(" ");
+  } else {
+    content = Object.values(extractedTexts).join(" ");
+  }
+
+  if (!content.trim()) {
+    aiBubble.innerText = "No content available for analysis. Please select units or ensure files are loaded.";
+    chat.scrollTop = chat.scrollHeight;
+    return;
+  }
+
+  try {
+    const res = await fetch("http://localhost:5000/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: q,
+        content: content
+      })
+    });
+
+    const data = await res.json();
+    if(data.success){
+      aiBubble.innerText = data.response;
+    } else {
+      aiBubble.innerText = "Error: " + (data.error || "Could not get response.");
+    }
+    chat.scrollTop = chat.scrollHeight;
+  } catch(e) {
+    aiBubble.innerText = "Error: Could not connect to AI service. Make sure the backend is running.";
+    console.error("Chat error:", e);
+  }
+}
+
+// Function to type out text word by word
+function typeWriter(element, text, speed = 50) {
+  let i = 0;
+  const words = text.split(' ');
+  element.innerText = '';
+
+  function typeWord() {
+    if (i < words.length) {
+      element.innerText += (i === 0 ? '' : ' ') + words[i];
+      i++;
+      setTimeout(typeWord, speed);
+    }
+  }
+  typeWord();
+}
+
+// Original ask function for the main chat
 async function ask(){
   let q = document.getElementById("q").value.trim();
   let chat = document.getElementById("chat");
   if(!q){alert("Enter question"); return;}
-  
+
   // Add user's message
   let userBubble = document.createElement("div");
   userBubble.className = "message user-msg";
@@ -128,13 +581,13 @@ async function ask(){
     });
     const data = await res.json();
     if (data.success) {
-      aiBubble.innerText = data.response;
+      typeWriter(aiBubble, data.response);
     } else {
-      aiBubble.innerText = "Error: " + (data.error || "Could not get response.");
+      typeWriter(aiBubble, "Error: " + (data.error || "Could not get response."));
     }
     chat.scrollTop = chat.scrollHeight;
   } catch(e) {
-    aiBubble.innerText = "Error: Could not connect to AI service. Make sure the backend is running.";
+    typeWriter(aiBubble, "Error: Could not connect to AI service. Make sure the backend is running.");
   }
 }
 </script>
