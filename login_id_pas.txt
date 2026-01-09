@@ -5,3 +5,8 @@ id - Jenson     pass - 1234
 id - chons      pass - 1234
 id - anitha     pass - 1234
 id - maheswari  pass - 1234
+
+
+##Student
+
+id - student   pass - 1234
