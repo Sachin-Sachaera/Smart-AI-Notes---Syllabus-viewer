@@ -100,6 +100,8 @@ smart-ai-notes/
 │   ├── dashboard.html        # Student dashboard
 │   ├── syllabus.html         # Student syllabus view
 │   └── ai.html               # AI chatbot interface
+|---css/
+|   |-- styles.css            # Animation of the website
 └── uploads/                  # File storage directories
     ├── unit1/
     ├── unit2/
@@ -145,3 +147,4 @@ smart-ai-notes/
 ## License
 
 This project is for educational purposes.
+
