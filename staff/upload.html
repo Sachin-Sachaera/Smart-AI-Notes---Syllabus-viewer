@@ -1,10 +1,172 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <title>Upload Syllabus</title>
 <style>
-body{font-family:Arial;background:#f4f6fb;padding:20px}
-.card{background:white;padding:20px;border-radius:10px;width:350px}
+:root {
+  --primary: #667eea;
+  --primary-hover: #556cd6;
+  --bg: #f4f6fb;
+  --text: #111;
+  --text-muted: #6b7280;
+  --white: #fff;
+  --shadow: rgba(0, 0, 0, 0.1);
+  --border: #e6e9ef;
+  --border-focus: var(--primary);
+  --success: #10b981;
+  --error: #ef4444;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  flex: 1;
+}
+
+h2 {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.card {
+  background: var(--white);
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px var(--shadow);
+  margin-bottom: 24px;
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+select, input[type="file"] {
+  width: 100%;
+  padding: 12px 16px;
+  margin: 8px 0;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: var(--white);
+  font-size: 16px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+select:focus, input[type="file"]:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+button {
+  width: 100%;
+  padding: 12px 16px;
+  margin-top: 16px;
+  border: none;
+  border-radius: 8px;
+  background: var(--primary);
+  color: var(--white);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+button:hover {
+  background: var(--primary-hover);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+.existing-item {
+  background: var(--white);
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 8px var(--shadow);
+  border: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.existing-item b {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.reupload-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  background: var(--error);
+  color: var(--white);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.reupload-btn:hover {
+  background: #dc2626;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    padding: 16px;
+  }
+  .card {
+    padding: 20px;
+  }
+  h2 {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 12px;
+  }
+  .card {
+    padding: 16px;
+  }
+  .existing-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
 </style>
 </head>
 <body>
@@ -26,12 +188,13 @@ function upload(){
 
  let reader = new FileReader();
  reader.onload = function(e) {
-   let data=JSON.parse(localStorage.getItem("syllabus")||"[]");
-   let existingIndex = data.findIndex(item => item.unit === unit && item.name === file.name);
+ let data=JSON.parse(localStorage.getItem("syllabus")||"[]");
+ let currentStaff = JSON.parse(localStorage.getItem("staff")) || {};
+ let existingIndex = data.findIndex(item => item.unit === unit && item.name === file.name && item.staffUser === currentStaff.user);
    if(existingIndex !== -1){
-     data[existingIndex] = {unit:unit, name:file.name, type:type, file:e.target.result};
+     data[existingIndex] = {unit:unit, name:file.name, type:type, file:e.target.result, course: currentStaff.course, staffUser: currentStaff.user};
    } else {
-     data.push({unit:unit, name:file.name, type:type, file:e.target.result});
+     data.push({unit:unit, name:file.name, type:type, file:e.target.result, course: currentStaff.course, staffUser: currentStaff.user});
    }
    localStorage.setItem("syllabus",JSON.stringify(data));
    alert("Uploaded successfully");
@@ -40,41 +203,26 @@ function upload(){
  reader.readAsDataURL(file);
 }
 
-function loadExisting(){
- let data=JSON.parse(localStorage.getItem("syllabus")||"[]");
- let div=document.getElementById("existing");
- div.innerHTML="<h3>Existing Syllabus</h3>";
- data.forEach((d,index)=>{
-   let item=document.createElement("div");
-   item.innerHTML=`<b>${d.unit}</b>: ${d.name} ${d.file ? '(Has file)' : '<button onclick="reupload('+index+')">Re-upload</button>'}`;
-   div.appendChild(item);
- });
-}
 
-function reupload(index){
- let data=JSON.parse(localStorage.getItem("syllabus")||"[]");
- let d=data[index];
- document.getElementById("unit").value=d.unit;
- alert("Please select the file for "+d.name+" and click upload to update.");
-}
-
-loadExisting();
 </script>
 
-<div class="card">
-<h2>Upload Syllabus</h2>
-<select id="unit">
-<option>Unit 1</option>
-<option>Unit 2</option>
-<option>Unit 3</option>
-<option>Unit 4</option>
-</select><br><br>
+<div class="container">
+  <div class="card">
+    <h2>Upload Syllabus</h2>
+    <select id="unit">
+    <option>Unit 1</option>
+    <option>Unit 2</option>
+    <option>Unit 3</option>
+    <option>Unit 4</option>
+    <option>Unit 5</option>
+    </select>
 
-<input type="file" id="file"><br><br>
-<button onclick="upload()">Upload</button>
+    <input type="file" id="file">
+    <button onclick="upload()">Upload</button>
+  </div>
+
+  <div id="existing"></div>
 </div>
-
-<div id="existing"></div>
 
 </body>
 </html>
