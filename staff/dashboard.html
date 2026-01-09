@@ -1,11 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <title>Staff Dashboard</title>
-<style>
-body{font-family:Arial;background:#f4f6fb;padding:20px}
-a{margin-right:15px;color:#667eea;font-weight:bold;text-decoration:none}
-</style>
+<link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>
 
@@ -13,10 +10,38 @@ a{margin-right:15px;color:#667eea;font-weight:bold;text-decoration:none}
 if(localStorage.getItem("role")!=="staff") location="../index.html";
 </script>
 
-<h2>Staff Dashboard</h2>
-<a href="upload.html">Upload Syllabus</a>
-<a href="syllabus.html">View Syllabus</a>
-<a href="../index.html" onclick="localStorage.clear()">Logout</a>
+<div class="container">
+  <h2>Staff Dashboard</h2>
+  <div class="nav-links">
+    <a href="upload.html" class="nav-link">Upload Syllabus</a>
+    <a href="syllabus.html" class="nav-link">View Syllabus</a>
+    <a href="../index.html" onclick="localStorage.clear()" class="nav-link logout">Logout</a>
+  </div>
+
+  <div class="card">
+    <h3>Staff Information</h3>
+    <p><strong>Name:</strong> <span id="staffName"></span></p>
+    <p><strong>Department:</strong> <span id="staffDept"></span></p>
+    <p><strong>Course:</strong> <span id="staffCourse"></span></p>
+  </div>
+
+  <div class="card">
+    <p style="text-align: center; color: var(--text-muted); margin: 0;">Welcome to the Staff Dashboard. Use the navigation links above to manage syllabus content.</p>
+  </div>
+</div>
+
+<script>
+if(localStorage.getItem("role")!=="staff") location="../index.html";
+
+function loadStaffData(){
+ let staff=JSON.parse(localStorage.getItem("staff")) || {};
+ document.getElementById("staffName").innerText=staff.name || "Staff";
+ document.getElementById("staffDept").innerText=staff.dept || "Department";
+ document.getElementById("staffCourse").innerText=staff.course || "Course";
+}
+
+loadStaffData();
+</script>
 
 </body>
 </html>
