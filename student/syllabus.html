@@ -13,7 +13,7 @@
       background: white;
       padding: 20px;
       border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0,0,0,.15);
+      box-shadow: 0 10px 25px rgba(18, 49, 251, 0.596);
       max-width: 900px;
       margin: 20px auto;
     }
@@ -62,7 +62,7 @@
       font-weight: bold;
     }
     h2 {
-      color: #333;
+      color: #f40d0d;
       margin-top: 0;
     }
     .status {
@@ -82,7 +82,7 @@
       border: 1px solid #f5c6cb;
     }
 
-    /* Chat Modal Styles */
+    /* Chat Modal Styles - ChatGPT/Gemini Style */
     .chat-modal {
       display: none;
       position: fixed;
@@ -91,7 +91,7 @@
       top: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(0,0,0,0.5);
+      background-color: rgba(43, 40, 40, 0.199);
     }
 
     .chat-container {
@@ -99,21 +99,24 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      width: 90%;
-      max-width: 600px;
-      max-height: 80%;
+      background: #2c2c2c;
+      border-radius: 12px;
+      box-shadow: 0 20px 25px -5px rgba(19, 47, 230, 0.601), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      width: 400px;
+      height: 600px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
     }
 
     .chat-header {
-      background: #667eea;
+      background: #6a34e5;
       color: white;
-      padding: 10px 15px;
+      padding: 16px 20px;
+      font-weight: 600;
+      font-size: 16px;
+      text-align: center;
+      border-bottom: 1px solid #555;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -122,42 +125,114 @@
     .close-btn {
       background: none;
       border: none;
-      color: white;
+      color: #ccc;
       font-size: 20px;
       cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+      transition: background-color 0.2s;
+    }
+
+    .close-btn:hover {
+      background: #ffffff;
+    }
+
+    .clear-btn {
+      background: none;
+      border: none;
+      color: #ccc;
+      font-size: 16px;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+      transition: background-color 0.2s;
+      margin-right: 8px;
+    }
+
+    .clear-btn:hover {
+      background: #555;
     }
 
     .chat-messages {
       flex: 1;
-      padding: 10px;
+      padding: 20px;
       overflow-y: auto;
-      max-height: 300px;
       display: flex;
       flex-direction: column;
+      gap: 16px;
+      background: #9cc3c398;
     }
 
     .message {
-      margin-bottom: 10px;
-      padding: 8px 12px;
-      border-radius: 8px;
       max-width: 80%;
+      padding: 12px 16px;
+      border-radius: 18px;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+      font-size: 14px;
+      line-height: 1.4;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
 
     .ai-msg {
-      background: #f0f0f0;
+      background: #096f41ae;
+      color: white;
       align-self: flex-start;
+      border-bottom-left-radius: 4px;
     }
 
     .user-msg {
-      background: #667eea;
+      background: #007bff;
       color: white;
       align-self: flex-end;
       margin-left: auto;
+      border-bottom-right-radius: 4px;
     }
 
     .chat-input {
-      border-top: 1px solid #ddd;
-      padding: 10px;
+      display: flex;
+      border-top: 1px solid #555;
+      padding: 16px 20px;
+      background: #2314f0dc;
+    }
+
+    .chat-input textarea {
+      flex: 1;
+      border: 1px solid #1df62875;
+      padding: 12px 16px;
+      border-radius: 24px;
+      resize: none;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+      background: #5272f368;
+      color: rgb(255, 255, 255);
+    }
+
+    .chat-input textarea:focus {
+      border-color: #007bff;
+      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    }
+
+    .chat-input button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 24px;
+      cursor: pointer;
+      margin-left: 12px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+    .chat-input button:hover {
+      background: #0056b3;
+    }
+
+    .chat-input textarea::placeholder {
+      color: #ccc;
     }
 
     .chat-buttons {
@@ -228,6 +303,10 @@
 
     .nav-button:hover {
       background: rgba(255,255,255,0.3);
+    }
+
+    .nav-home {
+      font-size: 30px;
     }
 
     /* Unit List Modal */
@@ -354,14 +433,10 @@
 <!-- Navigation Bar -->
 <div class="nav-bar">
   <div class="nav-content">
+    <a href="dashboard.html" class="nav-home" title="Home">🏠</a>
     <div class="nav-title">📘 Smart AI Notes</div>
-    <button class="nav-button" onclick="openUnitModal()">📚 Syllabus Units</button>
+    <button class="nav-button" onclick="openCourseModal()">📚 Syllabus Units</button>
   </div>
-</div>
-
-<div class="card">
-  <h2>📂 File Viewer</h2>
-  <p>Welcome to the syllabus management system. Use the navigation bar to select a syllabus unit to view.</p>
 </div>
 
 <!-- File Viewer -->
@@ -379,12 +454,16 @@
   <div id="syllabusContent"></div>
 </div>
 
-<!-- AI Features -->
-<div class="card" id="aiCard" style="display:none;">
-  <h2>🤖 AI Assistant</h2>
-  <p>Use AI to analyze the syllabus content:</p>
-  <div style="text-align: center; margin-top: 20px;">
-    <button onclick="openChat()" style="background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px;">🤖 Open AI Chatbot</button>
+
+
+<!-- Course Selection Modal -->
+<div class="unit-modal" id="courseModal">
+  <div class="unit-modal-content">
+    <div class="unit-modal-header">
+      📚 Select Course
+      <button class="unit-modal-close" onclick="closeCourseModal()">×</button>
+    </div>
+    <div class="unit-list" id="courseList"></div>
   </div>
 </div>
 
@@ -392,10 +471,21 @@
 <div class="unit-modal" id="unitModal">
   <div class="unit-modal-content">
     <div class="unit-modal-header">
-      📚 Syllabus Units
+      📚 Units
       <button class="unit-modal-close" onclick="closeUnitModal()">×</button>
     </div>
     <div class="unit-list" id="unitList"></div>
+  </div>
+</div>
+
+<!-- File Viewer Modal -->
+<div class="unit-modal" id="fileModal">
+  <div class="unit-modal-content">
+    <div class="unit-modal-header">
+      📄 File Viewer
+      <button class="unit-modal-close" onclick="closeFileModal()">×</button>
+    </div>
+    <div class="unit-list" id="fileViewer" style="padding: 20px; overflow-y: auto; max-height: 70vh;"></div>
   </div>
 </div>
 
@@ -404,17 +494,16 @@
   <div class="chat-container">
     <div class="chat-header">
       🤖 Smart AI Assistant
+      <button class="clear-btn" onclick="clearChat()" title="Clear Chat">🗑️</button>
       <button class="close-btn" onclick="closeChat()">×</button>
     </div>
     <div class="chat-messages" id="chat"></div>
+    <div class="chat-buttons">
+        <button onclick="selectUnits()">📚 Select Units</button>
+        <button onclick="generateQuestions()">📝 Generate Questions</button>
+        <button onclick="summarizeContent()">📋 Summarize</button>
+      </div>
     <div class="chat-input">
-      <div class="chat-buttons">
-          <button onclick="selectUnits()">📚 Select Units</button>
-          <button onclick="loadAllUnitsForAI()">📥 Load All Units</button>
-          <button onclick="generateQuestions()">📝 Generate Questions</button>
-          <button onclick="summarizeContent()">📋 Summarize</button>
-          <button onclick="searchContent()">🔍 Search</button>
-        </div>
       <textarea id="q" placeholder="Ask from syllabus..."></textarea>
       <button onclick="ask()">Send</button>
     </div>
@@ -434,34 +523,141 @@ if(role === "student" || role === "staff"){
   if(syllabusData.length === 0){
     container.innerHTML = "<div class='status error'>No syllabus files uploaded yet. Please contact your instructor.</div>";
   } else {
-    syllabusData.forEach((d, index) => {
-      const div = document.createElement("div");
-      div.className = "unit-item";
-      div.innerHTML = `<span class="unit-name-modal">${d.unit}: ${d.name}</span>`;
-      div.onclick = () => {
-        closeUnitModal();
-        showStatus(`Loading ${d.name}...`, "success");
-        if(d.file){
-          openSyllabusFile(d.file, d.type, d.file); // Pass file as identifier
-        } else {
-          showStatus("No file attached to this syllabus unit.", "error");
-          document.getElementById("viewer").innerHTML = "<p style='text-align: center; color: #666;'>No file available for this unit.</p>";
-          document.getElementById("textOutput").innerText = "";
-        }
-      };
-      container.appendChild(div);
+    // Group by course and filter to only show courses with uploaded units
+    const courses = {};
+    syllabusData.forEach(d => {
+      if(!courses[d.course]) courses[d.course] = [];
+      courses[d.course].push(d);
     });
 
-    // Auto-load first file
-    if(syllabusData.length > 0 && syllabusData[0].file){
-      setTimeout(() => {
-        showStatus(`Auto-loading ${syllabusData[0].name}...`, "success");
-        openSyllabusFile(syllabusData[0].file, syllabusData[0].type, syllabusData[0].file);
-      }, 1000);
-    }
+      // Map course names to display names
+      const courseNames = {
+        'Java programming': 'Java Programming',
+        'Machine Learning': 'Machine Learning',
+        'Data structures': 'Data Structures',
+        'Operating Systems': 'Operating Systems',
+        'Database Management Systems': 'Database Management Systems'
+      };
+
+      // Display courses that have units with files uploaded (using actual course names)
+      Object.keys(courses).filter(courseName => courses[courseName].some(unit => unit.file)).forEach(courseName => {
+      const courseDiv = document.createElement("div");
+      courseDiv.className = "unit-item course-item";
+      courseDiv.innerHTML = `<span class="unit-name-modal">📚 ${courseNames[courseName] || courseName}</span>`;
+      courseDiv.onclick = () => showUnitsForCourse(courseNames[courseName] || courseName, courses[courseName]);
+      container.appendChild(courseDiv);
+    });
   }
 } else {
   document.getElementById("unitList").innerHTML = "<div class='status error'>Access denied. Please login as a student or staff.</div>";
+}
+
+function showUnitsForCourse(courseName, units) {
+  const container = document.getElementById("unitList");
+  // Update modal header to show course name
+  document.querySelector('.unit-modal-header').innerHTML = `📚 ${courseName} Units <button class="unit-modal-close" onclick="closeUnitModal()">×</button>`;
+  container.innerHTML = `<div class="unit-item back-item" onclick="loadCourses()">⬅️ Back to Courses</div>`;
+
+  units.forEach((d, index) => {
+    const div = document.createElement("div");
+    div.className = "unit-item";
+    div.innerHTML = `<span class="unit-name-modal">${d.unit}: ${d.name}</span>`;
+    div.onclick = () => {
+      closeUnitModal();
+      showStatus(`Loading ${d.name}...`, "success");
+      if(d.file){
+        openSyllabusFile(d.file, d.type, d.file, document.getElementById("viewer"));
+      } else {
+        showStatus("No file attached to this syllabus unit.", "error");
+        document.getElementById("viewer").innerHTML = "<p style='text-align: center; color: #666;'>No file available for this unit.</p>";
+      }
+    };
+    container.appendChild(div);
+  });
+}
+
+function loadCourses() {
+  const role = localStorage.getItem("role");
+  let syllabusData = [];
+  if(role === "student" || role === "staff"){
+    syllabusData = JSON.parse(localStorage.getItem("syllabus") || "[]");
+    const container = document.getElementById("unitList");
+
+    if(syllabusData.length === 0){
+      container.innerHTML = "<div class='status error'>No syllabus files uploaded yet. Please contact your instructor.</div>";
+    } else {
+      // Group by course
+      const courses = {};
+      syllabusData.forEach(d => {
+        if(!courses[d.course]) courses[d.course] = [];
+        courses[d.course].push(d);
+      });
+
+      // Display courses first
+      Object.keys(courses).forEach(courseName => {
+        const courseDiv = document.createElement("div");
+        courseDiv.className = "unit-item course-item";
+        courseDiv.innerHTML = `<span class="unit-name-modal">📚 ${courseNames[courseName] || courseName}</span>`;
+        courseDiv.onclick = () => showUnitsForCourse(courseNames[courseName] || courseName, courses[courseName]);
+        container.appendChild(courseDiv);
+      });
+    }
+  }
+}
+
+/* ---------- Course Modal Functions ---------- */
+function openCourseModal() {
+  document.getElementById("courseModal").style.display = "flex";
+  loadCoursesIntoModal();
+}
+
+function closeCourseModal() {
+  document.getElementById("courseModal").style.display = "none";
+}
+
+function loadCoursesIntoModal() {
+  const role = localStorage.getItem("role");
+  let syllabusData = [];
+  if(role === "student" || role === "staff"){
+    syllabusData = JSON.parse(localStorage.getItem("syllabus") || "[]");
+    const container = document.getElementById("courseList");
+
+    if(syllabusData.length === 0){
+      container.innerHTML = "<div class='status error'>No syllabus files uploaded yet. Please contact your instructor.</div>";
+    } else {
+      // Group by course
+      const courses = {};
+      syllabusData.forEach(d => {
+        if(!courses[d.course]) courses[d.course] = [];
+        courses[d.course].push(d);
+      });
+
+      // Map course names to display names
+      const courseNames = {
+        'Java programming': 'Java Programming',
+        'Machine Learning': 'Machine Learning',
+        'Data structures': 'Data Structures',
+        'Operating Systems': 'Operating Systems',
+        'Database Management Systems': 'Database Management Systems'
+      };
+
+      // Display courses that have units with files uploaded (using course names)
+      const enrolledCourses = ['Java programming', 'Machine Learning', 'Data structures', 'Operating Systems', 'Database Management Systems'];
+      container.innerHTML = ""; // Clear previous content
+      Object.keys(courses).filter(courseName => enrolledCourses.includes(courseName) && courses[courseName].some(unit => unit.file)).forEach(courseName => {
+        const courseDiv = document.createElement("div");
+        courseDiv.className = "unit-item course-item";
+        courseDiv.innerHTML = `<span class="unit-name-modal">📚 ${courseNames[courseName] || courseName}</span>`;
+        courseDiv.onclick = () => {
+          closeCourseModal();
+          openUnitModalForCourse(courseNames[courseName] || courseName, courses[courseName]);
+        };
+        container.appendChild(courseDiv);
+      });
+    }
+  } else {
+    document.getElementById("courseList").innerHTML = "<div class='status error'>Access denied. Please login as a student or staff.</div>";
+  }
 }
 
 /* ---------- Unit Modal Functions ---------- */
@@ -471,6 +667,47 @@ function openUnitModal() {
 
 function closeUnitModal() {
   document.getElementById("unitModal").style.display = "none";
+}
+
+function openUnitModalForCourse(courseName, units) {
+  const container = document.getElementById("unitList");
+  // Update modal header to show course name
+  document.querySelector('.unit-modal-header').innerHTML = `📚 ${courseName} Units <button class="unit-modal-close" onclick="closeUnitModal(); openCourseModal();">×</button>`;
+  container.innerHTML = `<div class="unit-item back-item" onclick="closeUnitModal(); openCourseModal();">⬅️ Back to Courses</div>`;
+
+  units.forEach((d, index) => {
+    const div = document.createElement("div");
+    div.className = "unit-item";
+    div.innerHTML = `<span class="unit-name-modal">${d.unit}: ${d.name}</span>`;
+    div.onclick = () => {
+      // Close the modal and load the file into the in-page viewer
+      closeUnitModal();
+      showStatus(`Loading ${d.name}...`, "success");
+      // Ensure the in-page syllabus card/viewer is visible
+      const syllabusCard = document.getElementById("syllabusCard");
+      if (syllabusCard) syllabusCard.style.display = "block";
+      const inPageViewer = document.getElementById("viewer");
+      if(d.file){
+        openSyllabusFile(d.file, d.type, d.file, inPageViewer);
+        // Scroll viewer into view for better UX
+        setTimeout(() => inPageViewer.scrollIntoView({behavior: 'smooth', block: 'start'}), 150);
+      } else {
+        showStatus("No file attached to this syllabus unit.", "error");
+        if(inPageViewer) inPageViewer.innerHTML = "<p style='text-align: center; color: #666;'>No file available for this unit.</p>";
+      }
+    };
+    container.appendChild(div);
+  });
+  openUnitModal();
+}
+
+/* ---------- File Modal Functions ---------- */
+function openFileModal() {
+  document.getElementById("fileModal").style.display = "flex";
+}
+
+function closeFileModal() {
+  document.getElementById("fileModal").style.display = "none";
 }
 
 /* ---------- Status Messages ---------- */
@@ -483,8 +720,7 @@ function showStatus(message, type) {
 }
 
 /* ---------- Open file from syllabus ---------- */
-function openSyllabusFile(fileObj, type, fileKey){
-  const viewer = document.getElementById("viewer");
+function openSyllabusFile(fileObj, type, fileKey, viewer = document.getElementById("viewer")){
   viewer.innerHTML = "<p style='text-align: center; color: #666;'>Loading file...</p>";
 
   if(type === "pdf" || type === "application/pdf"){
@@ -506,10 +742,8 @@ function openSyllabusFile(fileObj, type, fileKey){
     img.src = fileObj;
     viewer.innerHTML = "";
     viewer.appendChild(img);
-    showStatus("Image loaded successfully!", "success");
   } else {
     viewer.innerHTML = "<p style='text-align: center; color: #666;'>Unsupported file type.</p>";
-    showStatus("Unsupported file type", "error");
   }
 }
 
@@ -557,10 +791,8 @@ function viewPDF(file, viewer, fileKey){
       const joined = textPages.join('\n\n');
       if (fileKey) extractedTexts[fileKey] = joined || "";
       if (joined && joined.trim()) document.getElementById("aiCard").style.display = "block";
-      showStatus("PDF loaded successfully!", "success");
     } catch (err) {
       console.error('Error rendering/extracting PDF:', err);
-      showStatus("Error loading PDF", "error");
     }
   }).catch(error => {
     console.error('Error loading PDF:', error);
@@ -577,7 +809,6 @@ function viewWord(file, viewer, fileKey){
       // Store extracted text for AI features
       if (fileKey) extractedTexts[fileKey] = text;
       viewer.innerHTML = "<div style='text-align: center; padding: 40px;'><p>📄 Word document loaded successfully!</p><p style='color: #666; font-size: 14px;'>Text extracted and ready for AI analysis.</p></div>";
-      showStatus("Word document loaded successfully!", "success");
       if (text && text.trim()) {
         document.getElementById("aiCard").style.display = "block";
       }
@@ -585,7 +816,6 @@ function viewWord(file, viewer, fileKey){
     .catch(error => {
       console.error('Error loading Word document:', error);
       viewer.innerHTML = "<p style='text-align: center; color: #666;'>Failed to load Word document.</p>";
-      showStatus("Error loading Word document", "error");
     });
 }
 
@@ -593,15 +823,76 @@ function viewWord(file, viewer, fileKey){
 let extractedTexts = {}; // Store extracted text for AI by file identifier
 let selectedUnits = new Set(); // Track selected units for AI analysis
 let extractionInProgress = false; // Flag to track if text extraction is in progress
+let chatHistory = []; // Store chat history
+
+function saveChatHistory() {
+  localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+}
+
+function loadChatHistory() {
+  const stored = localStorage.getItem("chatHistory");
+  if (stored) {
+    chatHistory = JSON.parse(stored);
+  } else {
+    chatHistory = [];
+  }
+}
+
+function renderChatHistory() {
+  const chat = document.getElementById("chat");
+  chat.innerHTML = "";
+  chatHistory.forEach(msg => {
+    const msgDiv = document.createElement("div");
+    msgDiv.className = msg.type === "user" ? "message user-msg" : "message ai-msg";
+    if (msg.type === "ai") {
+      msgDiv.innerHTML = formatMessage(msg.text);
+    } else {
+      msgDiv.innerText = msg.text;
+    }
+    chat.appendChild(msgDiv);
+  });
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function addMessageToHistory(type, text) {
+  chatHistory.push({ type, text });
+  saveChatHistory();
+}
 
 function openChat() {
   document.getElementById("chatModal").style.display = "flex";
-  document.getElementById("chat").innerHTML = '<div class="message ai-msg">Hello! I\'m your AI assistant. I can help you understand the syllabus content and generate questions. What can I help you with?</div>';
+  loadChatHistory();
+  if (chatHistory.length === 0) {
+    addMessageToHistory("ai", "Hello! I'm your AI assistant. I can help you understand the syllabus content and generate questions. What can I help you with?");
+  }
+  renderChatHistory();
 }
 
 function closeChat() {
   document.getElementById("chatModal").style.display = "none";
 }
+
+function clearChat() {
+  // Clear chat history
+  chatHistory = [];
+  saveChatHistory();
+
+  // Clear the chat display
+  const chat = document.getElementById("chat");
+  chat.innerHTML = "";
+
+  // Add the initial AI message
+  addMessageToHistory("ai", "Hello! I'm your AI assistant. I can help you understand the syllabus content and generate questions. What can I help you with?");
+  renderChatHistory();
+}
+
+// Add Enter key listener for sending messages
+document.getElementById("q").addEventListener("keydown", function(event) {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    ask();
+  }
+});
 
 /* ---------- Extract text from a file without rendering (for bulk loading) ---------- */
 async function extractTextFromFile(fileObj, type, fileKey){
@@ -778,6 +1069,7 @@ async function generateQuestions() {
     errorMsg.innerText = "No content available for question generation. Please click on syllabus units above to load their content, or select specific units using the '📚 Select Units' button.";
     chat.appendChild(errorMsg);
     chat.scrollTop = chat.scrollHeight;
+    addMessageToHistory("ai", "No content available for question generation. Please click on syllabus units above to load their content, or select specific units using the '📚 Select Units' button.");
     return;
   }
 
@@ -800,13 +1092,19 @@ async function generateQuestions() {
 
     const data = await res.json();
     if (data.success) {
-      aiBubble.innerText = data.response;
+      typeWriter(aiBubble, data.response);
+      setTimeout(() => {
+        aiBubble.innerHTML = formatMessage(data.response);
+      }, data.response.split(' ').length * 50 + 100);
+      addMessageToHistory("ai", data.response);
     } else {
-      aiBubble.innerText = "Error: " + (data.error || "Could not generate questions.");
+      typeWriter(aiBubble, "Error: " + (data.error || "Could not generate questions."));
+      addMessageToHistory("ai", "Error: " + (data.error || "Could not generate questions."));
     }
     chat.scrollTop = chat.scrollHeight;
   } catch (e) {
     aiBubble.innerText = "Error: Could not connect to AI service.";
+    addMessageToHistory("ai", "Error: Could not connect to AI service.");
     console.error("Question generation error:", e);
   }
 }
@@ -836,6 +1134,7 @@ async function summarizeContent() {
     errorMsg.innerText = "No content available for summarization. Please click on syllabus units above to load their content, or select specific units using the '📚 Select Units' button.";
     chat.appendChild(errorMsg);
     chat.scrollTop = chat.scrollHeight;
+    addMessageToHistory("ai", "No content available for summarization. Please click on syllabus units above to load their content, or select specific units using the '📚 Select Units' button.");
     return;
   }
 
@@ -858,15 +1157,59 @@ async function summarizeContent() {
 
     const data = await res.json();
     if (data.success) {
-      aiBubble.innerText = data.response;
+      typeWriter(aiBubble, data.response);
+      setTimeout(() => {
+        aiBubble.innerHTML = formatMessage(data.response);
+      }, data.response.split(' ').length * 50 + 100);
+      addMessageToHistory("ai", data.response);
     } else {
-      aiBubble.innerText = "Error: " + (data.error || "Could not summarize content.");
+      typeWriter(aiBubble, "Error: " + (data.error || "Could not summarize content."));
+      addMessageToHistory("ai", "Error: " + (data.error || "Could not summarize content."));
     }
     chat.scrollTop = chat.scrollHeight;
   } catch (e) {
     aiBubble.innerText = "Error: Could not connect to AI service.";
+    addMessageToHistory("ai", "Error: Could not connect to AI service.");
     console.error("Summarization error:", e);
   }
+}
+
+// Function to type out text word by word
+function typeWriter(element, text, speed = 50) {
+  let i = 0;
+  const words = text.split(' ');
+  element.innerText = '';
+
+  function typeWord() {
+    if (i < words.length) {
+      element.innerText += (i === 0 ? '' : ' ') + words[i];
+      i++;
+      setTimeout(typeWord, speed);
+    }
+  }
+  typeWord();
+}
+
+/* ---------- Message Formatting Function ---------- */
+function formatMessage(text) {
+  // Basic markdown-like formatting for ChatGPT-like appearance
+  let formatted = text
+    // Bold text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    // Italic text
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    // Code blocks
+    .replace(/```([\s\S]*?)```/g, '<pre style="background: #f8f9fa; padding: 8px; border-radius: 4px; margin: 8px 0; font-family: monospace; font-size: 12px; overflow-x: auto;">$1</pre>')
+    // Inline code
+    .replace(/`([^`]+)`/g, '<code style="background: #f8f9fa; padding: 2px 4px; border-radius: 3px; font-family: monospace; font-size: 12px;">$1</code>')
+    // Numbered lists
+    .replace(/^\d+\.\s+(.*)$/gm, '<div style="margin: 4px 0;">$&</div>')
+    // Bullet points
+    .replace(/^[-*]\s+(.*)$/gm, '<div style="margin: 4px 0;">• $1</div>')
+    // Line breaks
+    .replace(/\n/g, '<br>');
+
+  return formatted;
 }
 
 async function searchContent() {
@@ -897,6 +1240,7 @@ async function searchContent() {
     errorMsg.innerText = "No content available for search. Please select units or ensure files are loaded.";
     chat.appendChild(errorMsg);
     chat.scrollTop = chat.scrollHeight;
+    addMessageToHistory("ai", "No content available for search. Please select units or ensure files are loaded.");
     return;
   }
 
@@ -919,13 +1263,19 @@ async function searchContent() {
 
     const data = await res.json();
     if (data.success) {
-      aiBubble.innerText = data.response;
+      typeWriter(aiBubble, data.response);
+      setTimeout(() => {
+        aiBubble.innerHTML = formatMessage(data.response);
+      }, data.response.split(' ').length * 50 + 100);
+      addMessageToHistory("ai", data.response);
     } else {
-      aiBubble.innerText = "Error: " + (data.error || "Could not perform search.");
+      typeWriter(aiBubble, "Error: " + (data.error || "Could not perform search."));
+      addMessageToHistory("ai", "Error: " + (data.error || "Could not perform search."));
     }
     chat.scrollTop = chat.scrollHeight;
   } catch (e) {
     aiBubble.innerText = "Error: Could not connect to AI service.";
+    addMessageToHistory("ai", "Error: Could not connect to AI service.");
     console.error("Search error:", e);
   }
 }
@@ -941,6 +1291,7 @@ async function ask(){
   userBubble.innerText = q;
   chat.appendChild(userBubble);
   chat.scrollTop = chat.scrollHeight;
+  addMessageToHistory("user", q);
   document.getElementById("q").value = "";
 
   // Add AI "typing" bubble
@@ -968,6 +1319,7 @@ async function ask(){
 
   if (!content.trim()) {
     aiBubble.innerText = "No content available for analysis. Please select units or ensure files are loaded.";
+    addMessageToHistory("ai", "No content available for analysis. Please select units or ensure files are loaded.");
     chat.scrollTop = chat.scrollHeight;
     return;
   }
@@ -986,13 +1338,19 @@ async function ask(){
 
     const data = await res.json();
     if(data.success){
-      aiBubble.innerText = data.response;
+      typeWriter(aiBubble, data.response);
+      setTimeout(() => {
+        aiBubble.innerHTML = formatMessage(data.response);
+      }, data.response.split(' ').length * 50 + 100);
+      addMessageToHistory("ai", data.response);
     } else {
-      aiBubble.innerText = "Error: " + (data.error || "Could not get response.");
+      typeWriter(aiBubble, "Error: " + (data.error || "Could not get response."));
+      addMessageToHistory("ai", "Error: " + (data.error || "Could not get response."));
     }
     chat.scrollTop = chat.scrollHeight;
   } catch(e) {
     aiBubble.innerText = "Error: Could not connect to AI service. Make sure the backend is running.";
+    addMessageToHistory("ai", "Error: Could not connect to AI service. Make sure the backend is running.");
     console.error("Chat error:", e);
   }
 }
