@@ -1,4 +1,4 @@
-const express = require('express');
+ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const { OpenAI } = require('openai');
@@ -46,15 +46,34 @@ app.post('/api/chat', async (req, res) => {
 
     const systemPrompt = `You are an intelligent AI assistant for students studying from syllabus content.\n\n${content || ''}`;
 
-    const response = await client.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: message }
-      ],
-      max_tokens: 1000,
-      temperature: 0.7
-    });
+    let response;
+    let retries = 3;
+    let delay = 1000; // Start with 1 second delay
+
+    while (retries > 0) {
+      try {
+        response = await client.chat.completions.create({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: message }
+          ],
+          max_tokens: 1000,
+          temperature: 0.7
+        });
+        break; // Success, exit retry loop
+      } catch (err) {
+        if (err.status === 429 && retries > 1) {
+          // Rate limit hit, wait and retry
+          console.log(`Rate limit hit, retrying in ${delay}ms... (${retries - 1} retries left)`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          delay *= 2; // Exponential backoff
+          retries--;
+        } else {
+          throw err; // Re-throw if not rate limit or no retries left
+        }
+      }
+    }
 
     const choice = response.choices && response.choices[0];
     const aiText = extractTextFromChoice(choice) || '';
@@ -73,15 +92,33 @@ app.post('/api/generate-questions', async (req, res) => {
 
     const prompt = `Generate ${num_questions} multiple-choice questions from the following syllabus content. Each question should have 4 options (A, B, C, D) with one correct answer clearly marked.\n\nContent:\n${content}`;
 
-    const response = await client.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: 'You are a question generation expert.' },
-        { role: 'user', content: prompt }
-      ],
-      max_tokens: 1500,
-      temperature: 0.8
-    });
+    let response;
+    let retries = 3;
+    let delay = 1000;
+
+    while (retries > 0) {
+      try {
+        response = await client.chat.completions.create({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: 'You are a question generation expert.' },
+            { role: 'user', content: prompt }
+          ],
+          max_tokens: 1500,
+          temperature: 0.8
+        });
+        break;
+      } catch (err) {
+        if (err.status === 429 && retries > 1) {
+          console.log(`Rate limit hit, retrying in ${delay}ms... (${retries - 1} retries left)`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          delay *= 2;
+          retries--;
+        } else {
+          throw err;
+        }
+      }
+    }
 
     const choice = response.choices && response.choices[0];
     const questions = extractTextFromChoice(choice);
@@ -99,15 +136,33 @@ app.post('/api/summarize', async (req, res) => {
 
     const prompt = `Provide a concise summary of the following syllabus content. Include main topics, key concepts and learning objectives.\n\nContent:\n${content}`;
 
-    const response = await client.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: 'You are a summarization expert.' },
-        { role: 'user', content: prompt }
-      ],
-      max_tokens: 800,
-      temperature: 0.3
-    });
+    let response;
+    let retries = 3;
+    let delay = 1000;
+
+    while (retries > 0) {
+      try {
+        response = await client.chat.completions.create({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: 'You are a summarization expert.' },
+            { role: 'user', content: prompt }
+          ],
+          max_tokens: 800,
+          temperature: 0.3
+        });
+        break;
+      } catch (err) {
+        if (err.status === 429 && retries > 1) {
+          console.log(`Rate limit hit, retrying in ${delay}ms... (${retries - 1} retries left)`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          delay *= 2;
+          retries--;
+        } else {
+          throw err;
+        }
+      }
+    }
 
     const choice = response.choices && response.choices[0];
     const summary = extractTextFromChoice(choice);
@@ -125,15 +180,33 @@ app.post('/api/search', async (req, res) => {
 
     const prompt = `Search the following syllabus content for information related to: "${query}"\n\nContent:\n${content}\n\nProvide relevant excerpts and explanations.`;
 
-    const response = await client.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: 'You are a search and retrieval expert.' },
-        { role: 'user', content: prompt }
-      ],
-      max_tokens: 600,
-      temperature: 0.2
-    });
+    let response;
+    let retries = 3;
+    let delay = 1000;
+
+    while (retries > 0) {
+      try {
+        response = await client.chat.completions.create({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: 'You are a search and retrieval expert.' },
+            { role: 'user', content: prompt }
+          ],
+          max_tokens: 600,
+          temperature: 0.2
+        });
+        break;
+      } catch (err) {
+        if (err.status === 429 && retries > 1) {
+          console.log(`Rate limit hit, retrying in ${delay}ms... (${retries - 1} retries left)`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          delay *= 2;
+          retries--;
+        } else {
+          throw err;
+        }
+      }
+    }
 
     const choice = response.choices && response.choices[0];
     const results = extractTextFromChoice(choice);
